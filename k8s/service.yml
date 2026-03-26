@@ -2,13 +2,49 @@ apiVersion: v1
 kind: Service
 metadata:
   name: currency-conversion-service
+  namespace: production
+  labels:
+    app: currency-conversion
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"  # Network Load Balancer (faster)
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+spec:
+  type: LoadBalancer
+  
+  # Session affinity for consistent routing
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 3600
+  
+  # Service selector
+  selector:
+    app: currency-conversion
+  
+  # Ports
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+    protocol: TCP
+  
+  # Optional: Restrict source IPs
+  # loadBalancerSourceRanges: []  # Uncomment to restrict
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: currency-service
+  namespace: production
   labels:
     app: currency-conversion
 spec:
-  type: LoadBalancer
-  ports:
-    - port: 8080
-      targetPort: 8080
-      protocol: TCP
+  type: ClusterIP
   selector:
     app: currency-conversion
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+    protocol: TCP

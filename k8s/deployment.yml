@@ -2,10 +2,19 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: currency-conversion-service
+  namespace: production
   labels:
     app: currency-conversion
+    version: v1
+  annotations:
+    description: "Currency conversion microservice"
 spec:
   replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0  # Ensure no downtime
   selector:
     matchLabels:
       app: currency-conversion
@@ -13,14 +22,168 @@ spec:
     metadata:
       labels:
         app: currency-conversion
+        version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/actuator/prometheus"
     spec:
+      serviceAccountName: currency-service-account
+      terminationGracePeriodSeconds: 30
+      
+      # Security context at pod level
+      securityContext:
+        fsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+      
       containers:
       - name: currency-conversion
         image: <your-docker-registry>/currency-conversion-service:latest
+        imagePullPolicy: Always
+        
+        # Container ports
         ports:
-        - containerPort: 8080
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        
+        # Environment variables from ConfigMap and Secrets
+        envFrom:
+        - configMapRef:
+            name: app-config
+        - secretRef:
+            name: app-secrets
+        
+        # Additional environment variables
         env:
-        - name: CURRENCY_SERVICE_URL
-          value: "http://currency-service:8080"
-        - name: PORT
-          value: "8080"
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        
+        # Resource management - CRITICAL for proper functioning
+        resources:
+          requests:
+            cpu: 100m          # Minimum CPU
+            memory: 256Mi      # Minimum memory
+          limits:
+            cpu: 500m          # Maximum CPU
+            memory: 512Mi      # Maximum memory
+        
+        # Readiness Probe - Used by LoadBalancer to route traffic
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 30  # Wait before checking
+          periodSeconds: 10        # Check every 10 seconds
+          timeoutSeconds: 5        # Timeout after 5 seconds
+          failureThreshold: 3      # Fail after 3 attempts
+          successThreshold: 1      # Success after 1 attempt
+        
+        # Liveness Probe - Used to restart unhealthy containers
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 60  # Give app time to start
+          periodSeconds: 10        # Check every 10 seconds
+          timeoutSeconds: 5        # Timeout after 5 seconds
+          failureThreshold: 3      # Restart after 3 failures
+          successThreshold: 1      # Success after 1 attempt
+        
+        # Startup Probe - For slow-starting applications
+        startupProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8080
+            scheme: HTTP
+          periodSeconds: 5         # Check every 5 seconds
+          failureThreshold: 30     # 30 * 5 = 150 seconds max
+          successThreshold: 1
+        
+        # Container security context
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 1000
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+            add:
+            - NET_BIND_SERVICE
+        
+        # Volume mounts for writable directories
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: app-logs
+          mountPath: /var/log/app
+        
+        # Logging configuration
+        # Capture stdout/stderr automatically via Kubernetes
+      
+      # Restart policy
+      restartPolicy: Always
+      
+      # DNS configuration
+      dnsPolicy: ClusterFirst
+      
+      # Image pull secrets (for private registries)
+      imagePullSecrets:
+      - name: ecr-secret
+      
+      # Volumes
+      volumes:
+      - name: tmp
+        emptyDir:
+          medium: Memory
+          sizeLimit: 128Mi
+      - name: app-logs
+        emptyDir:
+          sizeLimit: 256Mi
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: currency-service-account
+  namespace: production
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: currency-service-role
+  namespace: production
+rules:
+- apiGroups: [""]
+  resources: ["configmaps", "secrets"]
+  verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: currency-service-rolebinding
+  namespace: production
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: currency-service-role
+subjects:
+- kind: ServiceAccount
+  name: currency-service-account
+  namespace: production

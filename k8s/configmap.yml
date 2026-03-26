@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: production
+data:
+  # Application Configuration
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+  CURRENCY_SERVICE_URL: "http://currency-service:8080"
+  
+  # Server Configuration
+  SERVER_PORT: "8080"
+  SERVER_THREADS: "100"
+  
+  # Database Configuration (if applicable)
+  # DB_HOST: "db.rds.amazonaws.com"
+  # DB_PORT: "5432"
+  # DB_NAME: "currency_db"
+  
+  # Monitoring
+  METRICS_ENABLED: "true"
+  HEALTH_CHECK_ENABLED: "true"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-secrets
+  namespace: production
+type: Opaque
+stringData:
+  # Add sensitive configurations here
+  # DATABASE_PASSWORD: "your-password"
+  # API_KEY: "your-api-key"
+  DB_PASSWORD: ""  # Will be overridden
+  API_KEY: ""      # Will be overridden

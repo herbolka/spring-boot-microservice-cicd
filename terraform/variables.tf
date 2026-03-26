@@ -1,47 +1,89 @@
 variable "aws_region" {
-  description = "The AWS region to deploy the infrastructure"
+  description = "AWS region where infrastructure will be deployed"
   type        = string
-  default     = "us-west-2"
+  default     = "us-east-1"
+}
+
+variable "environment" {
+  description = "Environment name (e.g., production, staging, development)"
+  type        = string
+  default     = "production"
 }
 
 variable "cluster_name" {
-  description = "The name of the Kubernetes cluster"
+  description = "Name of the EKS cluster"
   type        = string
-  default     = "currency-conversion-cluster"
+  default     = "currency-cluster"
 }
 
+variable "kubernetes_version" {
+  description = "Kubernetes version to use for the EKS cluster"
+  type        = string
+  default     = "1.28"
+}
+
+# VPC Configuration
+variable "vpc_cidr" {
+  description = "CIDR block for the VPC"
+  type        = string
+  default     = "10.0.0.0/16"
+}
+
+variable "subnet_count" {
+  description = "Number of subnets to create (for high availability)"
+  type        = number
+  default     = 2
+}
+
+# Node Group Configuration
 variable "instance_type" {
-  description = "The EC2 instance type for the worker nodes"
+  description = "EC2 instance type for worker nodes"
   type        = string
   default     = "t3.medium"
 }
 
+variable "capacity_type" {
+  description = "Capacity type for nodes (ON_DEMAND or SPOT)"
+  type        = string
+  default     = "ON_DEMAND"
+  validation {
+    condition     = contains(["ON_DEMAND", "SPOT"], var.capacity_type)
+    error_message = "Capacity type must be either ON_DEMAND or SPOT."
+  }
+}
+
 variable "desired_capacity" {
-  description = "The desired number of worker nodes in the cluster"
+  description = "Desired number of worker nodes"
+  type        = number
+  default     = 2
+}
+
+variable "min_size" {
+  description = "Minimum number of worker nodes"
   type        = number
   default     = 2
 }
 
 variable "max_size" {
-  description = "The maximum number of worker nodes in the cluster"
+  description = "Maximum number of worker nodes"
   type        = number
-  default     = 5
+  default     = 10
 }
 
-variable "min_size" {
-  description = "The minimum number of worker nodes in the cluster"
-  type        = number
-  default     = 1
-}
-
-variable "vpc_cidr" {
-  description = "The CIDR block for the VPC"
+# ECR Configuration
+variable "ecr_repository_name" {
+  description = "Name of the ECR repository"
   type        = string
-  default     = "10.0.0.0/16"
+  default     = "currency-conversion-service"
 }
 
-variable "subnet_cidrs" {
-  description = "The CIDR blocks for the subnets"
-  type        = list(string)
-  default     = ["10.0.1.0/24", "10.0.2.0/24"]
+# Tags
+variable "common_tags" {
+  description = "Common tags to be applied to all resources"
+  type        = map(string)
+  default = {
+    Project     = "CurrencyConversionService"
+    ManagedBy   = "Terraform"
+    CreatedAt   = "2024"
+  }
 }

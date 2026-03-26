@@ -1,0 +1,91 @@
+# Git ignore file for CI/CD project
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Terraform
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/tfplan
+terraform/.tfvars
+terraform/crash.log
+terraform/.DS_Store
+
+# AWS
+.aws/
+*.pem
+*.key
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Docker
+docker-compose.override.yml
+.docker/
+
+# Kubernetes
+kubeconfig
+kubeconfig.yaml
+kubeconfig.*
+
+# Build artifacts
+target/
+*.jar
+*.war
+*.ear
+*.zip
+
+# Logs
+*.log
+logs/
+
+# Node
+node_modules/
+npm-debug.log
+
+# Output files
+review_output.md
+review_output.json
+validation_report.md
+validation_data.json
+deployment-info.txt
+deployment-report.md
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
