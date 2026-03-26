@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: currency-conversion-service
+  labels:
+    app: currency-conversion
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: currency-conversion
+  template:
+    metadata:
+      labels:
+        app: currency-conversion
+    spec:
+      containers:
+      - name: currency-conversion
+        image: <your-docker-registry>/currency-conversion-service:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: CURRENCY_SERVICE_URL
+          value: "http://currency-service:8080"
+        - name: PORT
+          value: "8080"
