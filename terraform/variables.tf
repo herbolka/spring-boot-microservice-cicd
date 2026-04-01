@@ -32,20 +32,20 @@ variable "vpc_cidr" {
 variable "subnet_count" {
   description = "Number of subnets to create (for high availability)"
   type        = number
-  default     = 2
+  default     = 1
 }
 
 # Node Group Configuration
 variable "instance_type" {
   description = "EC2 instance type for worker nodes"
   type        = string
-  default     = "t3.medium"
+  default     = "t3.micro"
 }
 
 variable "capacity_type" {
   description = "Capacity type for nodes (ON_DEMAND or SPOT)"
   type        = string
-  default     = "ON_DEMAND"
+  default     = "SPOT"
   validation {
     condition     = contains(["ON_DEMAND", "SPOT"], var.capacity_type)
     error_message = "Capacity type must be either ON_DEMAND or SPOT."
@@ -55,19 +55,19 @@ variable "capacity_type" {
 variable "desired_capacity" {
   description = "Desired number of worker nodes"
   type        = number
-  default     = 2
+  default     = 1
 }
 
 variable "min_size" {
   description = "Minimum number of worker nodes"
   type        = number
-  default     = 2
+  default     = 1
 }
 
 variable "max_size" {
   description = "Maximum number of worker nodes"
   type        = number
-  default     = 10
+  default     = 2
 }
 
 # ECR Configuration
