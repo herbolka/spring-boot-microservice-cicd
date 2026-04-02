@@ -8,13 +8,11 @@ terraform {
     }
   }
 
-  # Note: Configure backend before first terraform init
-  # Uncomment and update with your S3 bucket details
-  # backend "s3" {
-  #   bucket         = "your-terraform-state-bucket"
-  #   key            = "eks/terraform.tfstate"
-  #   region         = "us-east-1"
-  #   encrypt        = true
-  #   dynamodb_table = "terraform-locks"
-  # }
+  backend "s3" {
+    bucket         = "YOUR_BUCKET_NAME_HERE"  # Замініть на ім'я вашого bucket
+    key            = "eks/terraform.tfstate"
+    region         = "us-east-1"
+    encrypt        = true
+    dynamodb_table = "terraform-locks"
+  }
 }
