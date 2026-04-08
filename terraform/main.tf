@@ -356,6 +356,7 @@ resource "aws_ecr_lifecycle_policy" "microservice" {
 resource "aws_cloudwatch_log_group" "eks" {
   name              = "/aws/eks/${var.cluster_name}/cluster"
   retention_in_days = 1
+  skip_destroy      = true
 
   tags = {
     Name        = "${var.cluster_name}-logs"
