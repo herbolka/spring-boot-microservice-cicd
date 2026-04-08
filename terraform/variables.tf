@@ -32,7 +32,7 @@ variable "vpc_cidr" {
 variable "subnet_count" {
   description = "Number of subnets to create (for high availability)"
   type        = number
-  default     = 1
+  default     = 2
 }
 
 # Node Group Configuration
