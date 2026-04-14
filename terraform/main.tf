@@ -357,11 +357,6 @@ resource "aws_cloudwatch_log_group" "eks" {
   name              = "/aws/eks/${var.cluster_name}/cluster"
   retention_in_days = 1
 
-  lifecycle {
-    # Terraform will refuse to destroy this resource
-    prevent_destroy = false
-  }
-
   tags = {
     Name        = "${var.cluster_name}-logs"
     Environment = var.environment
