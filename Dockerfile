@@ -6,17 +6,17 @@ FROM maven:3.8.5-eclipse-temurin-11 AS builder
 
 WORKDIR /build
 
-
+# Copy only pom.xml for dependency caching
 COPY pom.xml .
 
+# Download and cache dependencies
+RUN mvn dependency:go-offline -B -q
 
-RUN mvn dependency:go-offline -B
-
-
+# Copy source code
 COPY src ./src
 
-
-RUN mvn clean package -DskipTests
+# Build the application (skip tests for faster builds)
+RUN mvn clean package -DskipTests -q
 
 # ============================================================================
 # Runtime Stage
