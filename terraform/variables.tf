@@ -39,7 +39,7 @@ variable "subnet_count" {
 variable "instance_type" {
   description = "EC2 instance type for worker nodes"
   type        = string
-  default     = "t3.micro"
+  default     = "t3.small"
 }
 
 variable "capacity_type" {
@@ -67,7 +67,7 @@ variable "min_size" {
 variable "max_size" {
   description = "Maximum number of worker nodes"
   type        = number
-  default     = 2
+  default     = 3
 }
 
 # ECR Configuration
