@@ -14,7 +14,7 @@ RUN mvn clean package -DskipTests
 # ============================================================================
 # Runtime Stage
 # ============================================================================
-FROM openjdk:11-jre-slim
+FROM eclipse-temurin:11-jre-focal
 
 # Create app user (non-root for security)
 RUN useradd -m appuser
